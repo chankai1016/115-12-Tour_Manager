@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>115年領隊人員職前訓練 口試實戰抽題模擬系統</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              800: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* 自訂捲軸與平滑捲動 */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .dark ::-webkit-scrollbar-track { background: #1e293b; }
+    .dark ::-webkit-scrollbar-thumb { background: #475569; }
+    .pulse-urgent { animation: pulseUrgent 1.5s infinite; }
+    @keyframes pulseUrgent {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+  <!-- 頂部導覽列 -->
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800 px-4 py-3 sm:px-6">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="p-2 bg-brand-600 text-white rounded-xl shadow-md text-lg">🧭</span>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold leading-tight">115年外領口試 實務抽題系統</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400">行程中緊急事故危機處理 40 題實戰擬答</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button id="themeToggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="切換深淺模式">
+          <span id="themeIcon">🌙</span>
+        </button>
+        <button id="showListModalBtn" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center gap-1.5">
+          <span>📚</span> 題庫總覽 (<span id="totalBadge">40</span>)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主體容器 -->
+  <main class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+    <!-- 頂部操作控制列 -->
+    <section class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col md:flex-row items-center justify-between gap-4">
+      <!-- 篩選器 -->
+      <div class="w-full md:w-auto flex flex-wrap items-center gap-2">
+        <label for="categoryFilter" class="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300">類別篩選：</label>
+        <select id="categoryFilter" class="bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-xs sm:text-sm rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-brand-500 outline-none">
+          <option value="ALL">全部類別 (40題)</option>
+          <option value="交通">交通 (4題)</option>
+          <option value="行李">行李 (4題)</option>
+          <option value="住宿">住宿 (5題)</option>
+          <option value="餐飲">餐飲 (4題)</option>
+          <option value="災變">災變 (3題)</option>
+          <option value="服務">服務 (9題)</option>
+          <option value="證件">證件 (4題)</option>
+          <option value="其他">其他 (7題)</option>
+        </select>
+
+        <label for="difficultyFilter" class="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 ml-1">難度：</label>
+        <select id="difficultyFilter" class="bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-xs sm:text-sm rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-brand-500 outline-none">
+          <option value="ALL">全部難度</option>
+          <option value="★☆☆☆☆">★☆☆☆☆ (1星)</option>
+          <option value="★★☆☆☆">★★☆☆☆ (2星)</option>
+          <option value="★★★☆☆">★★★☆☆ (3星)</option>
+          <option value="★★★★☆">★★★★☆ (4星)</option>
+          <option value="★★★★★">★★★★★ (5星)</option>
+        </select>
+      </div>
+
+      <!-- 抽題與切換按鈕組 -->
+      <div class="w-full md:w-auto flex items-center justify-end gap-2">
+        <button id="prevBtn" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl text-xs sm:text-sm font-medium transition" title="上一題">
+          ◀ 上一題
+        </button>
+        <button id="randomBtn" class="flex-1 sm:flex-initial px-5 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-md shadow-brand-500/20 active:scale-95 transition flex items-center justify-center gap-2">
+          <span>🎲</span> 隨機抽一題
+        </button>
+        <button id="nextBtn" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl text-xs sm:text-sm font-medium transition" title="下一題">
+          下一題 ▶
+        </button>
+      </div>
+    </section>
+
+    <!-- 考場倒數計時器模組 (8分準備 + 4分回答) -->
+    <section class="bg-gradient-to-r from-slate-900 to-slate-850 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-slate-750 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-3 w-full md:w-auto">
+        <div id="timerModeIcon" class="text-2xl p-2.5 bg-slate-800 rounded-xl border border-slate-700">⏱️</div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="timerModeLabel" class="text-xs sm:text-sm font-semibold tracking-wider text-amber-400 uppercase">準備思考階段</span>
+            <span id="timerPacingTip" class="text-[11px] px-2 py-0.5 rounded bg-slate-700 text-slate-300 hidden sm:inline-block">建議擬定：第0步安頓、第1步查底牌、第2步給選項</span>
+          </div>
+          <div class="text-xs text-slate-400 mt-0.5">正式口試規範：看題準備 8 分鐘 ➔ 口頭報告 4 分鐘</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+        <!-- 倒數時間數值 -->
+        <div id="timerDisplay" class="font-mono text-3xl sm:text-4xl font-black tracking-widest text-white drop-shadow">
+          08:00
+        </div>
+        <!-- 計時器控制鈕 -->
+        <div class="flex items-center gap-1.5">
+          <button id="startTimerBtn" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs sm:text-sm font-bold shadow active:scale-95 transition">
+            開始
+          </button>
+          <button id="pauseTimerBtn" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 rounded-lg text-xs sm:text-sm font-bold shadow active:scale-95 transition hidden">
+            暫停
+          </button>
+          <button id="resetTimerBtn" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs sm:text-sm font-medium transition" title="重設本階段">
+            重設
+          </button>
+          <button id="switchModeBtn" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs sm:text-sm font-medium transition" title="切換準備/回答">
+            切換
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 題目情境卡片 -->
+    <article class="bg-white dark:bg-slate-800 rounded-3xl p-5 sm:p-7 shadow-md border border-slate-200/90 dark:border-slate-700/90 relative overflow-hidden transition-all duration-300">
+      
+      <!-- 標籤與難度列 -->
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/80 pb-4 mb-5">
+        <div class="flex items-center gap-2">
+          <span id="cardQuestionNo" class="px-3 py-1 bg-brand-600 text-white font-extrabold text-sm rounded-lg shadow-sm">
+            第 1 題
+          </span>
+          <span id="cardCategory" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg">
+            交通
+          </span>
+          <span id="cardTheme" class="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/40 text-brand-700 dark:text-brand-300 text-xs font-semibold rounded-lg">
+            遊覽車事故
+          </span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs text-slate-400">題目難度：</span>
+          <span id="cardDifficulty" class="text-amber-500 font-bold tracking-wider text-sm">
+            ★★★☆☆
+          </span>
+        </div>
+      </div>
+
+      <!-- 題目情境主文 -->
+      <div class="mb-6">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
+          <span>📋</span> 行程情境題目 (口試委員提問)
+        </h3>
+        <p id="cardScenario" class="text-base sm:text-lg font-medium leading-relaxed text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-900/60 p-4 sm:p-5 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
+          南非10日團第4天，表訂行程為早餐後自太陽城前往克魯格國家公園，出發前30分鐘接獲Local通知，原定遊覽車途中事故導致車損且司機受傷，調度車輛約3小時後抵達。請問領隊應如何處理？
+        </p>
+      </div>
+
+      <!-- 思考提示：回答大原則快捷展開 -->
+      <div class="mb-6">
+        <button id="toggleGoldenRulesBtn" class="text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1">
+          <span>💡</span> 點擊查看【領隊危機處理四大金字塔原則】速查
+        </button>
+        <div id="goldenRulesBox" class="hidden mt-2 p-3 bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl text-xs text-amber-900 dark:text-amber-200 space-y-1">
+          <p class="font-bold">▲ 考官核心邏輯金字塔：</p>
+          <p>1. <strong>人命急救第一</strong>：生命安全 > 財物損失 > 行程進度 > 公司成本。</p>
+          <p>2. <strong>大團秩序與分流</strong>：先安頓隔離群體慌亂，派導遊/家屬陪病，領隊留守主導現場。</p>
+          <p>3. <strong>掌握底牌再給選項</strong>：先跟飯店/航空/地接查明可退/換/補償之籌碼，切忌先問團員漫天要求。</p>
+          <p>4. <strong>官方證據與依法免責</strong>：索取報案單Denuncia、PIR、診斷書，個人違法/任意脫隊簽切結書自負。</p>
+        </div>
+      </div>
+
+      <!-- 參考解答區域 (可隱藏/展開，利於模擬自我測驗) -->
+      <div class="border-t border-slate-100 dark:border-slate-700/80 pt-5 space-y-4">
+        
+        <div class="flex items-center justify-between">
+          <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+            <span>🎯</span> 口試高分應對解析
+          </h4>
+          <button id="toggleAnswerBtn" class="text-xs px-3 py-1.5 rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300 font-semibold hover:bg-brand-100 dark:hover:bg-brand-900/60 transition">
+            隱藏擬答 (模擬實測)
+          </button>
+        </div>
+
+        <div id="answerSection" class="space-y-4 transition-all duration-300">
+          
+          <!-- 回答重點 -->
+          <div class="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 p-3.5 sm:p-4 rounded-2xl">
+            <h5 class="text-xs font-bold text-emerald-800 dark:text-emerald-300 mb-1 flex items-center gap-1.5">
+              <span>✅</span> 回答核心重點 (30秒破題)
+            </h5>
+            <p id="cardKeyPoint" class="text-xs sm:text-sm text-emerald-950 dark:text-emerald-100 leading-relaxed">
+              化枯等為休閒，維護人身安全（南非治安考量），預防性前置調整長途車程之餐食與飯店住宿。
+            </p>
+          </div>
+
+          <!-- 實務陷阱 -->
+          <div class="bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-800/40 p-3.5 sm:p-4 rounded-2xl">
+            <h5 class="text-xs font-bold text-rose-800 dark:text-rose-300 mb-1 flex items-center gap-1.5">
+              <span>⚠️</span> 實務致命陷阱 (口試扣分大忌)
+            </h5>
+            <p id="cardTrap" class="text-xs sm:text-sm text-rose-950 dark:text-rose-100 leading-relaxed">
+              讓旅客在飯店大廳乾等引發強烈客訴；忽略南非治安讓團員擅離園區；忘記延誤3小時將導致深夜抵達克魯格錯過晚餐。
+            </p>
+          </div>
+
+          <!-- 實際操作 (具體行動 SOP) -->
+          <div class="bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-750 p-4 sm:p-5 rounded-2xl">
+            <h5 class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+              <span>🪜</span> 階段式實際操作 (4分鐘發言綱領)
+            </h5>
+            <div id="cardActionContainer" class="space-y-2.5 text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-200 font-normal">
+              <!-- 動態產出分段標題與步驟 -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </article>
+
+    <!-- 底部功能導航：題目跳號選單 -->
+    <div class="flex flex-wrap items-center justify-between text-xs text-slate-400 px-2 gap-2">
+      <div>目前題數：<span id="currentQuestionIndicator" class="font-bold text-slate-700 dark:text-slate-300">1 / 40</span></div>
+      <div class="flex items-center gap-1">
+        <span>快速跳至：</span>
+        <select id="jumpQuestionSelect" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-slate-700 dark:text-slate-200 outline-none">
+          <!-- 動態填入 1~40 -->
+        </select>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 題庫總覽 Modal 彈出視窗 -->
+  <div id="listModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-6">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-4xl max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700">
+      <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+        <h3 class="text-base sm:text-lg font-bold">📚 40題完整題庫索引清單</h3>
+        <button id="closeListModalBtn" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 text-lg">✕</button>
+      </div>
+      <div class="p-4 border-b border-slate-100 dark:border-slate-750 flex items-center gap-2">
+        <input type="text" id="searchQuestionInput" placeholder="搜尋題號、國家、關鍵字（如：護照、暴動、心臟、延誤）..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-2 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-brand-500">
+      </div>
+      <div id="modalListContent" class="overflow-y-auto p-4 space-y-2 divide-y divide-slate-100 dark:divide-slate-700/60">
+        <!-- JS 動態生成題目列表項目 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 頁腳版權 -->
+  <footer class="mt-auto py-4 text-center text-xs text-slate-400 border-t border-slate-200/60 dark:border-slate-800">
+    中華民國領隊人員職前訓練 外語第12期 結業測驗口試專用模擬工具
+  </footer>
+
+  <!-- 完整 40 題資料庫與應用邏輯 -->
+  <script>
+    // 40題完整資料庫（結合難度、回答重點、實務陷阱、階段式實際操作）
+    const questionsData = [
+      {
+        id: 1,
+        category: "交通",
+        theme: "遊覽車事故",
+        difficulty: "★★★☆☆",
+        scenario: "南非10日團第4天，表訂行程為早餐後自太陽城前往克魯格國家公園，出發前30分鐘接獲Local通知，原定遊覽車途中事故導致車損且司機受傷，調度車輛約3小時後抵達。請問領隊應如何處理？",
+        keyPoint: "化枯等為休閒，維護人身安全（南非治安考量），預防性前置調整長途車程之餐食與飯店住宿。",
+        trap: "讓旅客在飯店大廳乾等引發強烈客訴；忽略南非治安讓團員擅離園區；忘記延誤3小時將導致深夜抵達克魯格錯過晚餐。",
+        action: "安頓與行李：立即協調飯店行李部集中看管大件行李，向櫃檯爭取Late Check-out房間或休息室供長者休息。\n佈達與放行：誠實說明車況與司機受傷，宣布上午改為太陽城內自由活動，公佈各設施營業時間，明確約定11:30大廳集合，嚴厲叮囑基於治安考量絕對不可離開度假區管制區。\n後勤與調度：領隊留守大廳通報台灣公司，緊盯Local派車進度；將午餐改於度假區內享用或備餐盒；致電克魯格國家公園入住飯店延後晚餐或預留餐盒。"
+      },
+      {
+        id: 2,
+        category: "交通",
+        theme: "航班延遲",
+        difficulty: "★★★★☆",
+        scenario: "挪威12日團首日，因班機故障，航空公司調度以增加轉機點方式重整航程，行程嚴重延宕；抵達目的地時適逢寒冬低溫，因多數行李未隨機抵達，團員禦寒衣物不足，控訴旅行社處理消極要求賠償。請問領隊應如何處理？",
+        keyPoint: "防範低溫失溫風險為首要任務，於管制區內開立PIR證明，安撫情緒但堅守公司授權底線。",
+        trap: "離開管制區未開PIR喪失理賠資格；為息事寧人私自答應旅行社全額賠償；輕忽低溫對長者幼童造成的失溫威脅。",
+        action: "防寒與安頓：通報Local遊覽車提早開強暖氣接駁，避免團員受寒失溫；優先照護年長者與幼童生理狀況。\n開立證明：在轉盤管制區帶領受影響旅客憑行李條至地勤櫃檯開立「行李異常報告單（PIR）」，確認後續送達飯店資訊。\n生活採購與保全：帶領全團至市區商場採購禦寒衣物與必需盥洗用品，嚴格叮囑保留所有發票明細正本以利理賠。\n應對求償：同理其焦慮與不適，說明領隊無現場賠償授權，承諾全力協助彙整單據回報組團社與保險公司專案審查。"
+      },
+      {
+        id: 3,
+        category: "交通",
+        theme: "班機延誤",
+        difficulty: "★★★☆☆",
+        scenario: "北歐18日團第12天，晚餐後預計搭乘班機由瑞典斯德哥爾摩前往冰島雷克雅未克，受天候因素影響，班機延誤2小時起飛，抵達冰島通關入境已是翌日凌晨。請問領隊應如何處理相關事宜？",
+        keyPoint: "預防性防止旅客跨夜挨餓，確認冰島司機工時法規，落實深夜飯店入住無縫接軌。",
+        trap: "忽略凌晨抵達無處用餐引發飢餓暴怒；歐洲司機工時超時拒載導致露宿機場；未聯繫飯店導致夜間無人接待。",
+        action: "預防挨餓：在瑞典機場確定延誤時，廣播提醒旅客先於機場自費用餐或採買乾糧麵包備用。\n交通法規確認：聯繫冰島Local與接機司機，確認班機延誤後司機工時是否符合歐盟法規；若超時立即要求Local調度夜班替代車輛。\n飯店入住接軌：致電冰島入住飯店，確認抵達時間為凌晨，確保大門與夜班櫃檯留守，預先完成排房並備妥房卡。\n抵達快速通關：入境後迅速集合上車，於車上預先發放房卡與宣布翌日延後Morning Call，抵達後直入房間休息。"
+      },
+      {
+        id: 4,
+        category: "交通",
+        theme: "交通延誤誤機風險",
+        difficulty: "★★★★☆",
+        scenario: "新加坡5日Incentive團首日，領隊陪同團員搭乘遊覽車前往機場途中，國道遇嚴重壅塞定點滯留逾30分鐘，全團護照由領隊統一保管，研判時程，恐無法於航班報到關櫃前抵達機場。請問領隊應如何處理相關事宜？",
+        keyPoint: "團進團出同進退（護照在手絕不可拋下大團），窮盡聯繫管道爭取保留機位，啟動改票備案。",
+        trap: "領隊拿全團護照自己搭車先衝機場把團員丟在路上；消極等待直接導致No-Show全毀；與司機爭執忽視應變。",
+        action: "掌握路況：向司機與Local確認國道回堵原因與預估通車時間，評估周邊交流道轉乘地鐵（MRT）可行性。\n聯繫機場地勤：致電航空公司機場櫃檯與送機人員，告知遇嚴重事故塞車、團號、人數與預估抵達時間，懇請地勤主管通融延遲關櫃，或先行於後台劃位鎖定機位。\n全團同進退：全團護照由領隊統一保管，領隊必須留守車上安撫團員情緒，嚴禁私自脫隊分開行動。\n啟動簽轉備案：若確認絕對趕不上關櫃，即刻聯繫台灣組團社與航空公司票務，查詢當晚或翌日早班機空位，著手簽轉改票並安排過夜食宿。"
+      },
+      {
+        id: 5,
+        category: "行李",
+        theme: "行李遺失",
+        difficulty: "★★★☆☆",
+        scenario: "韓國5日團首日，獨自參團之某團員於行李轉盤區遲未見其託運行李，其中除準備贈與韓國友人之伴手禮，尚有高血壓處方用藥，見其他團員均已完成通關，該旅客情緒焦急，請求協助。請問領隊應如何處理相關事宜？",
+        keyPoint: "慢性病用藥具急迫性需優先就醫、同理安撫獨旅者無助感、大團與個人採雙軌分流處理。",
+        trap: "讓全團在轉盤區無止盡乾等引發公憤；輕忽高血壓斷藥風險釀成中風意外；放任個人旅客孤立無援。",
+        action: "團隊分流：請韓國地陪（Local Guide）先帶領其餘通關團員出關上車等候，領隊留步專門陪伴該名團員。\n申報與安撫：持行李條至航空公司行李櫃檯開立PIR行李異常報告單，安撫其情緒並承諾會每日追蹤。\n緊急醫療就醫：詢問上次服藥時間，出關後立即請地陪或領隊叫計程車帶其前往當地醫院或診所，由醫師重新開立高血壓處方箋並至藥局取藥。\n必需品採購：陪同購買當晚換洗衣物與盥洗用品，提醒保留收據供旅遊不便險理賠，回飯店後持續關懷。"
+      },
+      {
+        id: 6,
+        category: "行李",
+        theme: "行李損壞",
+        difficulty: "★☆☆☆☆",
+        scenario: "德國10日團，抵達目的地機場，完成通關及行李提領後，某團員發現其托運行李箱明顯受損變形，情緒激動要求領隊協助處理。請問領隊應如何處理相關事宜？",
+        keyPoint: "離開管制區前完成官方申報、現場拍照保全理賠證據、同理情緒並釐清航空公司責任。",
+        trap: "走出管制區海關才申報遭航空公司拒絕受理；領隊越權承諾「公司會賠新行李箱」；與旅客對嗆其箱子本來就舊。",
+        action: "情緒安撫與現場拍照：將旅客帶至旁邊安撫，避免堵塞動線；在行李轉盤區當場多角度拍照、錄影記錄行李箱破損變形處。\n申報PIR證明：立即帶領旅客至該航空公司行李服務櫃檯（Baggage Service Office），出示登機證與行李條，填報申報單並索取PIR正本。\n爭取現場補償：詢問地勤是否有現場賠償方案（如更換同規格新箱、現場維修單或現金補償）。\n後續理賠指導：告知旅客返國後可憑PIR單、機票、破損照片向信用卡或個人旅行不便險申請理賠；若箱體無法使用，協助尋求飯店借用束帶或採購應急箱。"
+      },
+      {
+        id: 7,
+        category: "行李",
+        theme: "行李超重",
+        difficulty: "★★☆☆☆",
+        scenario: "加拿大10日團返程，於機場辦理報到時，某團員因托運行李超重而被要求支付超重費用；該員情緒激動，斥責領隊未善盡事前提醒義務，並要求協助規避費用或代為墊付。請問領隊應如何處理相關事宜？",
+        keyPoint: "委婉堅定守住法規與財務底線、行前說明義務之舉證、協助減重分裝或依規定簽立借據。",
+        trap: "與旅客當場激烈爭吵引發圍觀；擅自代表旅行社答應吸收超重費；未立借據直接掏腰包借錢成個人呆帳。",
+        action: "隔離降溫：將該員帶離報到隊伍，避免阻礙動線與引發全團圍觀，傾聽抱怨並同理其行李超重的懊惱。\n說明法規責任：委婉說明國際航線行李限額為航空公司嚴格法規，行前手冊與說明會皆有明列規範，超重費屬旅客個人開銷，旅行社與領隊無法代為承擔。\n協助減重分裝：協助旅客就地開箱重新打包，將重物或厚外套取出改為隨身手提，或協調同房同行友人在限額內共同勻稱重量。\n緊急代墊機制：若分裝後仍超重且其現金或信用卡額度不足，領隊可動用預備金協助刷卡代墊，但必須由該旅客當場簽立「代墊款借據」並載明回台清償承諾。"
+      },
+      {
+        id: 8,
+        category: "行李",
+        theme: "動植物檢疫規定",
+        difficulty: "★★★☆☆",
+        scenario: "江南6日團返程，某團員遭查獲攜帶玉米澱粉腸(含豬、雞肉成分)入境，依法裁罰，該員主張領隊僅說明不得攜帶肉製品，未提及此類食品亦屬管制項目，質疑專業疏失要求分攤罰鍰。請問領隊應如何處理相關事宜？",
+        keyPoint: "國家防檢疫法規屬旅客個人法律責任、提出事前宣導佐證、堅定拒絕分攤罰款。",
+        trap: "領隊為息事寧人私下答應分攤罰款；在海關管制區與防疫官員爭執阻礙公務；推卸責任惡化客訴。",
+        action: "配合檢疫執法：配合動植物防疫檢疫署官員依法裁處，引導該員至開罰處所冷靜受檢，避免衝突擴大。\n堅定拒絕分攤：委婉但堅定表明海關檢疫裁罰為國家法律規定之個人法律責任；領隊於出發前手冊、機上廣播及返台前夕已多次宣導動植物製品管制，無法承擔或分攤違法罰鍰。\n保全宣導紀錄：指出行前說明資料、出團手冊與通訊群組內皆有載明「禁止攜帶肉製品及動植物加工品」之明確文字記錄。\n後續程序協助：協助該旅客完成罰單簽署與繳款程序指引，並向台灣組團社備案，詳載於工作日誌以防回台後惡意客訴。"
+      },
+      {
+        id: 9,
+        category: "住宿",
+        theme: "入住查無訂房紀錄",
+        difficulty: "★★★☆☆",
+        scenario: "英國10日團第6天，晚餐後抵達預定飯店辦理check-in時，櫃檯人員告知當晚並無本團訂房紀錄，無法順利入住，連日行程團員已身心疲憊，伴隨焦慮與不耐情緒。請問領隊應如何處理相關事宜？",
+        keyPoint: "先安頓團員身心避免在大廳罰站、出示正式Voucher強力交涉、啟動地接同級替代方案。",
+        trap: "讓疲憊團員圍在櫃檯聽爭吵加劇不滿；未核對訂房代號就消極認賠；隨便找劣質飯店過夜引起二次客訴。",
+        action: "妥善安頓團員：請團員先至飯店大廳沙發休息區就座，協調飯店提供免費開水或熱茶，請大家看管隨身行李稍候。\n憑證核對與交涉：向櫃檯經理出示訂房確認單（Hotel Voucher）、訂房代號與團名，要求核對同音異拼或旅行社不同代號；若因飯店超賣（Overbooking），強力要求飯店負起轉移安置責任。\n緊急通報地接：立刻致電英國當地Local緊急聯絡人與台灣組團社OP，要求地接訂房主管立刻向飯店總部施壓或調度同等級以上之鄰近飯店。\n轉移補償安排：若必須更換飯店，要求原飯店或Local承擔交通接駁費用，並由領隊協助搬運行李；抵達新飯店迅速發放房卡，並延後隔日早晨出發時間讓團員補足睡眠。"
+      },
+      {
+        id: 10,
+        category: "住宿",
+        theme: "衛生疑慮安全風險",
+        difficulty: "★★★☆☆",
+        scenario: "德瑞10日團，入住度假木屋旅館，因未設電梯，團員須自行搬運行李徒步上樓，部分旅客進房後發現寢具似有血跡污漬，且房門安全鎖具無法正常運作，衍生衛生疑慮與住宿安全風險。請問領隊應如何處理相關事宜？",
+        keyPoint: "安全與衛生絕不妥協、領隊親自現場查驗存證、要求立即換房或現場徹底改善修繕。",
+        trap: "輕忽安全鎖損壞讓旅客硬住；在通訊軟體上指揮未親赴房間查證；忽略團員自行搬行李跌倒受傷風險。",
+        action: "親赴現場勘驗：領隊第一時間親自陪同旅客進房，現場檢視並拍照錄影存證寢具污漬與門鎖損壞狀況，同理旅客的不安與反感。\n現場強力交涉：立即前往櫃檯要求飯店值班主管到場查看，嚴正表明涉及「人身安全與公共衛生」，要求立即更換至安全無虞且清潔乾淨之客房。\n無空房時之極限改善：若飯店無空房可換，要求房務人員立刻當場撤換全新寢具與床包，並由工程人員立刻修復安全鎖；領隊在旁全程監督，確認安全無虞後始離開。\n行李搬運補救：針對無電梯徒步搬運問題，協同導遊及司機協助老弱團員搬運行李；事後拍照回報台灣公司，作為向地接社要求服務扣款或補償之依據。"
+      },
+      {
+        id: 11,
+        category: "住宿",
+        theme: "室友因素要求換房",
+        difficulty: "★★★☆☆",
+        scenario: "馬爾地夫7日團第3天，某團員因其室友作息習慣不一致(晚睡早起)且對方有嚴重打呼情形，影響睡眠品質與度假體驗，遂向領隊提出更換房間之要求。請問領隊應如何處理相關事宜？",
+        keyPoint: "同理失眠痛苦、明確說明房費差額規定、調解雙方作息並提供助眠應急物資。",
+        trap: "強行要求其他無辜團員換房製造新矛盾；未經確認直接承諾免費換單人房；敷衍了事引發旅客負評。",
+        action: "私下傾聽同理：私下單獨與該團員溝通，同理其度假放鬆卻因睡眠不足產生的焦慮與疲倦。\n查詢空房與差價說明：向飯店櫃檯查詢度假村當前是否有空房（如單人房或同級房型）；若有，明確說明依合約需由旅客「自費補足單人房差價」，若旅客同意則協助辦理換房手續。\n無空房時之協調：若客滿或旅客不願補差價，在徵得雙方同意下進行友善溝通，協調雙方就寢熄燈時間與早起活動動線。\n提供助眠支援：領隊提供隨身常備之降噪耳塞、蒸氣眼罩等助眠物資，並請飯店多提供枕頭被褥，協助旅客調整睡眠姿勢減緩打呼影響。"
+      },
+      {
+        id: 12,
+        category: "住宿",
+        theme: "住宿等級認知落差",
+        difficulty: "★★★★☆",
+        scenario: "義大利14日頂級團，標榜安排具歷史文化價值之古蹟飯店，因建築本身結構限制，某團員主觀認知客房窄小、設備陳舊，當即引發對高價團費與品質落差之不滿，並於社群發酵。請問領隊應如何處理相關事宜？",
+        keyPoint: "詮釋文化歷史資產價值、主動改善房況與提供尊榮補償、即時防堵社群公關危機擴大。",
+        trap: "與團員當面爭辯護航飯店；在社群留言區對嗆；冷處理任由網路負面輿論發酵。",
+        action: "文化詮釋與降溫：私下拜訪該名團員，傾聽其抱怨，委婉解說歐洲古蹟建築（Historic Building）受文資法保護無法大幅改建之歷史背景與珍貴性。\n爭取換房或升等：親自向飯店總經理交涉，說明該團為高價頂級團，爭取調整至視野更佳、空間較大之特色套房或同級較佳房型。\n尊榮實質補償：由領隊與導遊名義，協調飯店致贈迎賓水果盤、精選紅酒或手寫卡片，或於當晚晚餐升等特色紅白酒，給足旅客尊榮感。\n社群公關通報：同步回報台灣組團社客服與行銷主管，回傳現場協調照片與房型調整處理過程，以便總公司監控社群動態並準備妥善公關說明。"
+      },
+      {
+        id: 13,
+        category: "住宿",
+        theme: "電梯停電",
+        difficulty: "★★★☆☆",
+        scenario: "馬新6日團第2天，於飯店辦理check-in後，搭乘電梯上樓突遇停電，車廂內瞬間昏暗，僅餘緊急照明，同電梯之某團員因處於密閉空間感到焦慮不安，驚聲尖叫並出現呼吸急促之情形。請問領隊應如何處理相關事宜？",
+        keyPoint: "幽閉恐懼心理急救與換氣調節、嚴禁冒險盲目脫困、維持通訊並催促啟動飯店發電機。",
+        trap: "領隊自身慌亂尖叫；企圖盲目撬開電梯門導致墜落天井風險；未第一時間向中控室求救。",
+        action: "冷靜安撫穩定軍心：領隊先以堅定沉穩的聲音安撫全車廂，表明領隊在身邊，請大家深呼吸不要驚慌。\n心理急救處置：開啟手機微光手電筒（避免直射眼睛），握住該呼吸急促團員的手，引導其調節呼吸節奏（吸氣4秒、吐氣4秒，或利用紙袋/雙手罩住口鼻），防止過度換氣症候群。\n啟動緊急求救：按下電梯內之緊急呼叫鈴（Intercom）與警報鈕，向飯店中控室通報受困人數與電梯編號，確認飯店緊急發電機已啟動並調度工程人員救援。\n脫困後續照護：電梯平層開啟後，引導團員緩步出梯，將該恐慌團員帶至通風明亮之大廳休息，提供溫水，評估是否需叫救護車或安排醫師檢查。"
+      },
+      {
+        id: 14,
+        category: "餐飲",
+        theme: "食物中毒",
+        difficulty: "★★★★★",
+        scenario: "峇里島5日團第3天，凌晨陸續有團員出現嘔吐、腹瀉、發燒等症狀，本團17人中有10人送醫急診，其中3人需住院治療、2人留院觀察，致使近半數成員無法繼續既定行程。請問領隊應如何處理相關事宜？",
+        keyPoint: "生命安全第一、大量傷患雙軌分流（醫院組vs大團組）、通報衛生單位並保全醫療與食安單據。",
+        trap: "領隊一人奔波醫院把健康團員丟包；未索取診斷書與餐食檢體；隱匿不報未通報組團社啟動急難救助。",
+        action: "緊急就醫與分流：領隊指派當地導遊（Local Guide）常駐醫院負責急診與住院協調，領隊留在飯店統籌全局並安撫健康團員；或由Local接管大團，領隊進駐醫院照料重症。\n保全證據與通報：通報台灣組團社啟動海外急難救助機制；通報當地衛生局與觀光局；要求醫院開立「診斷證明書」與「醫療明細收據正本」；封存前一日餐食菜單與進食紀錄。\n行程彈性切換：健康團員依意願由Local帶領繼續走輕鬆或替代行程；住院與留觀旅客指派專人看護，隨時回報家屬與公司病情進度。\n後續簽轉與保險：評估住院團員是否需延後返國，預先協調航空公司更改機票；回台後全力協助辦理海外突發疾病醫療險與旅行社責任險理賠。"
+      },
+      {
+        id: 15,
+        category: "餐飲",
+        theme: "餐食爭議",
+        difficulty: "★★★☆☆",
+        scenario: "北越下龍灣5日團，行程表載明安排每人餐標30美金之「海鮮吃到飽」餐廳，但實際用餐時餐點份量明顯不足、食材新鮮度不佳，與所揭示價位不相符，團員因此群起抗議。請問領隊應如何處理相關事宜？",
+        keyPoint: "現場立即加點熱食滿足生理需求、拍照錄影保全契約不符證據、堅定理清Local責任與事後補償。",
+        trap: "幫地接護航找藉口激怒團員；放任旅客挨餓抗議；當場口頭承諾全額退團費越權處置。",
+        action: "現場拍照存證：立刻拍攝餐檯菜色、空盤、食材不新鮮之特寫，以及餐廳菜單與現場環境，留存違約證據。\n現場果斷加菜補救：直接要求餐廳經理立即加補足量新鮮海鮮；若餐廳推託，領隊當機立斷動用公款預備金，於現場加點高單價海鮮熱炒或額外主菜，務必讓全團吃飽。\n情緒同理與表態：向全團誠懇致歉，明確表態領隊站在旅客權益這一方，已完整拍照存證，絕不容許地接偷工減料。\n究責與退費爭取：將照片與單據傳回台灣組團社線控主管，嚴正向越南Local抗議並要求扣減餐費，回台後由公司依定型化契約退還餐標差額並給予適當補償。"
+      },
+      {
+        id: 16,
+        category: "餐飲",
+        theme: "作業疏漏",
+        difficulty: "★★★☆☆",
+        scenario: "美東12日團，某團員於報名時已註明「長期茹素」，因旅行社作業疏忽，致其在首日10多個小時的航程中未能提供素餐。通關入境後，餐廳皆已打烊，該旅客飢餓與疲憊交加，情緒失控。請問領隊應如何處理相關事宜？",
+        keyPoint: "真誠承擔責任坦率致歉、動用一切資源尋找熱食果腹、預防性全面校對後續航程與餐食。",
+        trap: "推卸責任給公司業務或OP；叫旅客忍耐到隔天早上；忽視低血糖引起的生理失控情緒。",
+        action: "情緒承接與致歉：雙手遞上瓶裝水，真誠向旅客深深致歉，坦承是旅行社交接疏失，不找藉口，同理其長途飛行未進食的痛苦。\n多方尋找熱食：立刻協調飯店晚班廚房是否能炒一份無肉蔬菜炒飯或沙拉；若無，領隊或地陪立即前往附近24小時便利超商、速食店採買素食微波餐、麵包、水果或全素泡麵。\n後續餐食校對：當晚立刻致電後續11天所有的行程餐廳與回程航空公司，逐一重新確認「嚴格素食（Vegetarian/Vegan）」需求已被系統鎖定。\n專案關懷補償：後續行程由領隊自費或協調公司，每餐額外為其加點精緻素食特產小吃，展現彌補誠意，回報公司專案處理其客訴退費。"
+      },
+      {
+        id: 17,
+        category: "餐飲",
+        theme: "餐食爭議",
+        difficulty: "★★★☆☆",
+        scenario: "澳洲9日團，某團員於報名時已註明「不食蝦類海鮮」，第4晚安排龍蝦鮑魚晚餐，見同團盡享佳餚，該員主菜僅為牛排，頓感餐費價值不對等與尊榮受損，情緒激動、甩下餐具斥責領隊。請問領隊應如何處理相關事宜？",
+        keyPoint: "理解「尊榮感剝奪」心理、現場加碼實質餐酒補償、委婉說明食材特殊性與等值價值。",
+        trap: "當場反駁「牛排比龍蝦貴」；與旅客在餐桌上大聲爭論；對旅客甩餐具冷嘲熱諷激化矛盾。",
+        action: "情緒降溫與帶離現場：輕聲安撫並請旅客至安靜角落，同理其看著同桌吃龍蝦而自己只有牛排的心理失落感。\n即時升等補救：立即請餐廳主管出面，當場為其免費加碼開一瓶精選澳洲紅酒、或升等份量更大之安格斯頂級和牛，並附贈特製甜點拼盤。\n說明成本與原委：委婉說明因其事先註明不食海鮮，餐廳特地為其採購最高等級之澳洲牛排作為等值替換，絕非次級對待。\n預防後續失誤：檢視往後行程的所有正餐菜單，若有海鮮大餐行程，提前向地接社要求升等為等值之特殊排餐或精緻套餐，避免二度引發爭議。"
+      },
+      {
+        id: 18,
+        category: "災變",
+        theme: "颱風",
+        difficulty: "★★★★☆",
+        scenario: "九州5日團第5天，抵達機場準備返國，受強烈颱風侵襲影響，航班大亂，團員自上午11時候機至傍晚19時仍無法登機，隨著風雨越來越大，機場可能全面關閉。請問領隊應如何處理相關事宜？",
+        keyPoint: "安全第一防範受困機場、預防性搶訂飯店與接駁車、完整保全航班延誤取消證明。",
+        trap: "盲目在候機室死等直到機場關閉露宿大廳；未開延誤證明影響保險理賠；未向在台家屬報平安。",
+        action: "評估趨勢果斷撤退：持續監控日本氣象廳與機場航廈公告，研判19時後風雨增強極可能全面關場，果斷決定撤離機場，避免全團受困無水無食。\n搶先預訂食宿交通：立刻聯繫九州Local緊急搶訂機場周邊或市區之過夜飯店房間，並調派遊覽車進場接駁，搶在其他滯留旅客之前鎖定資源。\n索取官方延誤證明：於離開管制區前，向航空公司地勤櫃檯索取全團「航班取消/延誤證明書」，叮囑團員妥善保管。\n啟動旅遊不便險機制：宣導信用卡與旅遊不便險理賠範圍，提醒團員保留額外衍生之住宿、餐飲、交通發票收據；同步通報台灣組團社與家屬報平安。"
+      },
+      {
+        id: 19,
+        category: "災變",
+        theme: "地震",
+        difficulty: "★★★★★",
+        scenario: "南紀6日團第5天，適逢芮氏規模8.0強震並伴隨多次餘震，致道路中斷、鐵路停駛及部分區域停電，行程被迫調整；同時，關西機場因跑道受損宣布關閉，恐影響後續航班運作。請問領隊應如何處理相關事宜？",
+        keyPoint: "官方防災庇護所避難、通報駐外代表處急難救助、統籌物資並擬定替代機場撤離備案。",
+        trap: "擅自帶團冒險穿越災區道路；與外界中斷通訊未報平安引發台灣家屬恐慌；輕忽餘震引發土石流風險。",
+        action: "就地避難與點名：立即清點全團人數確認全員無傷，遵守日本當地防災指揮，引導全團進入政府指定之防震避難設施或堅固飯店大廳，備足保暖衣物與飲用水。\n通報外館與公司：第一時間撥打「駐大阪辦事處」急難救助電話，通報本團位置、人數與平安狀況；發送衛星通訊或訊息至台灣組團社與觀光署回報，請公司向家屬報平安。\n掌握災情與替代路線：密切關注道路交通情報中心（JARTIC）與JR西日本復軌進度；若關西機場短期無法恢復，研判轉往名古屋中部機場或東京成田/羽田之陸路包車可能性。\n滯留安頓與物資控管：動用預備金由領隊與導遊統一採購乾糧、飲水，每日召開定時團員說明會更新最新交通資訊，穩定軍心。"
+      },
+      {
+        id: 20,
+        category: "災變",
+        theme: "飯店火警",
+        difficulty: "★★★★☆",
+        scenario: "宿霧4日團第2天，凌晨時分住宿飯店突然警鈴大作，廣播緊急疏散通知，此時走廊已開始瀰漫濃煙，多名團員因極度驚恐而在房門口大聲呼救，現場陷入混亂。請問領隊應如何處理相關事宜？",
+        keyPoint: "火場逃生基本準則（低姿勢、濕布掩口鼻、不搭電梯）、冷靜指揮全員清點人數、妥善轉移安置。",
+        trap: "領隊自己先逃跑；讓團員回房拿行李財物；搭乘電梯逃生釀成傷亡；清點人數漏人。",
+        action: "逃生口令與壓制恐慌：領隊大聲以母語喝令：「不要拿行李！不要搭電梯！壓低身體沿著逃生指標走！」協助走廊呼救團員用濕毛巾或衣物掩住口鼻。\n引導避難至集結點：帶領團員沿安全梯迅速下樓撤出飯店，抵達飯店外空曠之上風處集結點。\n點名與清點人數：拿出隨身隨團名冊（Rooming List）逐一唱名，確認全員到齊；若有人失聯，立刻向在場消防隊長通報受困房號，切勿自行折返火場。\n後續安置與通報：通報菲律賓Local與台灣組團社，緊急調派遊覽車接駁全團至備用飯店休息，並協助清點因火災受損之財物，向當地消防局索取火災證明。"
+      },
+      {
+        id: 21,
+        category: "服務",
+        theme: "接機延誤",
+        difficulty: "★★★☆☆",
+        scenario: "俄羅斯12日團，抵達莫斯科機場完成通關後已逾18:30，原定接機之遊覽車未依約抵達，經聯繫司機及Local均無回應，團員經長途飛行已感疲憊，且因時程延宕尚未用餐，情緒漸趨焦慮與不滿。請問領隊應如何處理？",
+        keyPoint: "優先解決生理需求（飲食防寒）、設定等待停損點啟動備用交通、事後完整存證究責。",
+        trap: "讓飢寒交迫團員在機場大廳傻等數小時；未取得台灣公司授權私自搭乘危險黑車；將責任全推給地接而不作為。",
+        action: "安頓團員與安排用餐：將團員安置於機場室內溫暖休息區，指派一人看管行李，領隊動用預備金購買機場熱食餐點與飲用水供團員充飢，安撫焦慮情緒。\n通報台灣組團社：向台灣公司緊急聯絡人通報莫斯科Local與司機失聯，要求台北主管以高層管道直接聯繫地接社負責人。\n設定停損與調度備用車：設定最多等待45分鐘；若仍失聯，在台灣公司授權下，於機場正規排班計程車櫃檯或透過Aeroexpress機場快線加市區計程車，分批安全將團員送抵預定飯店。\n入住與究責存證：安全抵達飯店後迅速完成Check-in讓團員休息；保留所有代墊交通收據與通聯記錄，翌日嚴正向俄羅斯Local追究違約責任。"
+      },
+      {
+        id: 22,
+        category: "服務",
+        theme: "機位超賣",
+        difficulty: "★★★★☆",
+        scenario: "德國13日團返程，於機場辦理報到時，航空公司告知因機位超賣，全團32位旅客將拆分為18人(含4人商務艙)與14人兩組，分別搭乘不同航班經香港轉機返國，引發團員不滿情緒。請問領隊應如何處理相關事宜？",
+        keyPoint: "爭取航空公司最大補償、公開透明徵求自願拆組、指派得力聯絡人維持雙向通訊掌握行蹤。",
+        trap: "領隊私自指定拆分名單引發內鬨；領隊自己搭商務艙把團員丟在後班機；未安排另一組的聯繫窗口。",
+        action: "爭取最高補償福利：強力要求航空公司提供歐盟EU261規定之航班延誤超賣補償金（現金或旅行券）、香港轉機貴賓室使用券或餐飲券。\n公開徵求自願者：向全團說明超賣現況，優先徵求自願搭乘另一班機之年輕旅客或朋友組合，並將4張商務艙機票優先提供給願意的長者或自願拆組者作為補償。\n人員配置與領隊責任：領隊必須留在人數較多或狀況較多的一組（或搭乘較晚的一組），在另一組指派資深可靠之團員擔任「隨團聯絡人」，提供緊急電話。\n轉機追蹤無縫接合：在香港機場轉機點保持兩組通訊通暢，確認轉機登機門，回台出關後集合兩組團員，協助向航空公司索取超賣補償證明。"
+      },
+      {
+        id: 23,
+        category: "服務",
+        theme: "秀場攝影",
+        difficulty: "★★☆☆☆",
+        scenario: "韓國5日團第2天，參觀亂打秀演出，入場前導遊說明相關規定，全程禁止拍攝錄音，違者得要求刪除或離場，某團員表達強烈不滿與抱怨，認為拍照為個人權益，執意拍攝。請問領隊應如何處理相關事宜？",
+        keyPoint: "堅守著作權法規與劇場秩序、以保護團員免受驅離罰款為由勸阻、調整座次就近監控。",
+        trap: "縱容拍照導致全場演出中斷損害全體形象；當眾怒罵團員引發激烈衝突；答應若被抓幫忙付罰款。",
+        action: "柔性法規宣導：私下走到該團員身旁，委婉但明確告知：「韓國劇場對著作權非常嚴格，違規會被紅外線雷射筆標定並當場請出場，甚至報警沒收設備，我們是為了保護您的權益與顏面。」\n調整座位全程監控：領隊主動將自己座位調整至該員身旁或正後方，以便在開演時隨時提醒；開演前再次提醒將手機收妥於包包內。\n現場違規即時撲滅：若開演後該員仍拿出手機能及時伸手輕按制止，避免劇場安保人員介入中斷全團觀賞。\n離場應變：若該員仍執意違規被請出場，領隊需配合劇場將其帶至大廳休息，嚴正告誡其行為後果，並於工作日誌載明其違約失序行為。"
+      },
+      {
+        id: 24,
+        category: "服務",
+        theme: "懷孕搭機",
+        difficulty: "★☆☆☆☆",
+        scenario: "澳洲12日團出發首日，於機場辦理報到手續時，地勤人員發現某團員懷孕已逾32週，且無法提供符合規定之適航證明書，基於飛航安全考量，航空公司予以拒絕載運。請問領隊應如何處理相關事宜？",
+        keyPoint: "遵從民航法規與母嬰飛安、分流協助退關與行李拉回、大團如期登機出發。",
+        trap: "領隊與地勤爭吵企圖強行闖關延誤大團起飛；把孕婦丟在機場不管未聯繫家屬；未依規定辦理退關手續。",
+        action: "接受法規並安撫旅客：向孕婦及其隨行親友委婉說明，航空法規基於高空氣壓變化與母嬰安全，32週以上無適航證明絕對無法登機，請其理解安全考量。\n協助辦理退關手續：請送機人員或機場地勤陪同該孕婦辦理退關、拉下托運行李，並聯繫其在台家屬前來機場接送返家。\n大團照常通關出發：領隊向其餘團員簡短說明狀況後，迅速帶領大團通關登機，確保全團航班不受影響。\n通報組團社退費協調：在登機前通知台灣組團社業務與主管，說明該旅客因生理未附證明遭拒載退關，由公司依旅遊契約及航空公司規定辦理扣除必要費用後之退費。"
+      },
+      {
+        id: 25,
+        category: "服務",
+        theme: "搭機規範",
+        difficulty: "★★★☆☆",
+        scenario: "奧地利10日團首日，有2名同行旅客(均首次出國)因機位無法相鄰，向領隊表達抗議要求處理，待航機起飛進入平飛階段，接獲空服員通報，該組團員佔用商務艙空位且拒絕返回原座。請問領隊應如何處理相關事宜？",
+        keyPoint: "維護客艙秩序與國際飛安法規、配合座艙長嚴正勸離、警告機上違法後果並顧及回程安排。",
+        trap: "縱容團員佔用商務艙；領隊不敢出面得罪團員；在機艙內與空服員起爭執；未宣導機上秩序法規。",
+        action: "立刻配合座艙長介入：接獲通報後，領隊立即隨同座艙長前往商務艙，當場嚴肅且堅定地向該兩位旅客表明立場。\n告誡法律責任：嚴正告誡旅客：「擅自越級佔用商務艙座位屬於違反國際航空保安條例，若拒不服從機長指示，抵達維也納機場後將由當地航警直接登機上銬逮捕並列入黑名單。」\n引導返回原座：親自陪同兩位團員返回經濟艙座位，並承諾在飛行途中若有其他乘客願意換位，領隊會盡力協助協調。\n回程座位預防：在行程期間安撫其初次出國的不適應感，並提前請地接或票務在回程劃位時，務必提前鎖定相鄰座位。"
+      },
+      {
+        id: 26,
+        category: "服務",
+        theme: "團員借貸",
+        difficulty: "★★★☆☆",
+        scenario: "美西8日團第4天，某團員於賭場小試身手後旅費用罄，翌日自由活動期間欲購物，因身上無美鈔現金、且信用卡額度不足，向領隊提出借支1,000美金請求，承諾返國後歸還。請問領隊應如何處理相關事宜？",
+        keyPoint: "嚴守財務紀律絕不私貸、啟動公司代收代付機制、提供合法金融調額或國際匯款管道。",
+        trap: "領隊私下借出預備金釀成個人呆帳；建議其向其他團員借錢破壞團體氣氛；當眾拒絕讓旅客難堪。",
+        action: "委婉拒絕與說明：領隊的美金現金是全團的『緊急急難預備金』，為了保障全團發生突發狀況時有錢可用，依規定無法作為個人大額借支。\n啟動跨國資金調度：建議他聯繫在台灣的家屬，將等值的台幣直接匯入「台灣組團社」的指定帳戶。領隊向台灣公司確認匯款入帳，提供身上的預備金，或者請當地地接社（Local）將1,000美金交給他。\n提供其他金融替代方案：協助他申請「臨時調高信用卡額度」或協助他家屬利用「西聯匯款」等國際速匯服務。"
+      },
+      {
+        id: 27,
+        category: "服務",
+        theme: "團員情緒",
+        difficulty: "★★★★☆",
+        scenario: "某團員獨自參加澳洲8日團，第3日午餐時，突然情緒失控嚎啕大哭，經安撫後情緒稍微平穩並繼續行程，次日，其情緒再度崩潰，明確表達無意願繼續行程，要求領隊安排提早返國。請問領隊應如何處理相關事宜？",
+        keyPoint: "心理支持傾聽同理、依法簽署中途離團切結書釐清責任、後勤派員專車送機且領隊留守大團。",
+        trap: "領隊親自送機拋棄大團；強行扣留旅客引發自殘或意外；未簽署離團切結書回台衍生法律糾紛。",
+        action: "同理支持與退步緩衝：私下傾聽其崩潰原因，給予心理支持，建議是否留在飯店休息一天再做決定，不給予壓力。\n說明法規與簽署切結書：若該員堅持離團返國，委婉說明未走完之行程無法退費，衍生機票改票與交通需自理；請其正式簽署「旅客自願離團切結書」載明責任歸屬。\n聯繫家屬與通報組團社：聯繫其在台緊急聯絡人告知狀況，請家屬在台灣接機；通報組團社協助票務更改提早班機。\n地接專人送機：領隊留守帶領大團，由Local安排專車與專人護送該旅客至機場辦理登機，並追蹤其順利登機起飛。"
+      },
+      {
+        id: 28,
+        category: "服務",
+        theme: "地接糾紛",
+        difficulty: "★★★★☆",
+        scenario: "克羅埃西亞12日團第4天，因組團社與地接社間發生帳務糾紛，致當地導遊片面中斷行程，並要求旅客現場額外支付費用。請問領隊應如何處理相關事宜？",
+        keyPoint: "捍衛旅客合約權益拒絕現場加價、領隊動用預備金墊付維持行程、通報台北高層立刻清帳施壓。",
+        trap: "讓旅客現場掏腰包付錢引發公憤；與導遊當場鬥毆使行程癱瘓；放任行程中斷在原地空等。",
+        action: "安撫團員隔離勒索：請團員在車上或休息區等候，領隊出面嚴正拒絕導遊向旅客收費的要求，聲明帳務糾紛屬B2B合約範疇，不可轉嫁旅客。\n緊急通報台灣高層：立刻致電台灣組團社總經理或線控主管，要求台灣端立刻電匯或出示保證函給克羅埃西亞地接社老闆，解除中斷危機。\n動用預備金代墊應急：若短時間無法解決，為保障旅客行程，領隊以隨身預備金或個人信用卡代墊當日必要景點門票與餐費，維持行程推進。\n證據保全與更換導遊：保留所有導遊罷工勒索之通話錄音與單據，要求地接社於次日撤換該名不適任導遊，回台後由法務進行求償。"
+      },
+      {
+        id: 29,
+        category: "服務",
+        theme: "團體紀律",
+        difficulty: "★★★☆☆",
+        scenario: "日本北九州6日團，某團員不遵守約定集合時間、經常性遲到，導致團體行程延誤，引發其他團員強烈不滿，經領隊溝通，該旅客以「我有付團費,反正車會等我」為由回應。請問領隊應如何處理相關事宜？",
+        keyPoint: "捍衛全體團員共同權益、建立明確懲治底線（遲到不候）、運用群體紀律制約自私行為。",
+        trap: "當眾辱罵引起正面衝突；消極等待讓全團權益受損；私自開走未告知如何會合衍生失蹤風險。",
+        action: "私下嚴正溝通：單獨告知該旅客其遲到已侵犯其他旅客權益，領隊受契約約束需顧全大團，個人的團費不包含剝奪他人時間的特權。\n宣布團體集合規範：於車上向全團公開宣告「逾時不候準則」：集合時間起算寬限10分鐘，逾時遊覽車依表訂準時出發前往下一景點。\n提供脫隊自費指南：明確告知若被放鴿子，旅客需自費搭乘計程車或JR電車至下一站與大團會合，並提供領隊電話與下一站詳細地址定位。\n詳實記錄備查：將每次遲到之確切時間、景點、溝通過程載明於日誌，並請司機與其他團員作證，回台後防範不合理客訴。"
+      },
+      {
+        id: 30,
+        category: "證件",
+        theme: "遺失",
+        difficulty: "★★★★☆",
+        scenario: "夏威夷7日團第6天，表定於早餐後辦理退房，隨即前往機場搭機返國，某團員整理行李時驚覺護照遺失，焦慮不安、請求領隊協助。請問領隊應如何處理相關事宜？",
+        keyPoint: "大團如期登機（分流原則）、警局報案取得報案證明、聯繫駐外館處（檀香山辦事處）連夜/急件辦理入國證明書。",
+        trap: "全團陪同在夏威夷滯留；未取得報案證明就去辦事處；未安排落單旅客後續食宿與送機。",
+        action: "最後徹底搜尋：陪同該旅客回房間、行李箱細部夾層及前晚用餐處快速搜尋，確認是否真的遺失。\n大團如期出發：指派當地導遊（Local）帶領大團其餘團員如期前往機場辦理登機返國，領隊留下一人（或指派在地導遊）專責協助該旅客。\n警方報案取件：立刻前往檀香山當地警局報案，取得「護照遺失報案證明正本（Police Report）」。\n外館急難救助：聯繫「駐檀香山台北經濟文化辦事處」，檢附照片、身分證影本與報案單，以最速件申請「入國證明書」，並協助更改翌日機票與安排過夜飯店。"
+      },
+      {
+        id: 31,
+        category: "證件",
+        theme: "證照瑕疵",
+        difficulty: "★★★☆☆",
+        scenario: "印尼7日團首日，某團員進行出境證照查驗時，移民官發現其護照內頁有破損及缺頁情形，即予以退關處理，聯繫領隊求助，並質疑報名時護照已由旅行社收取保管，為何未審查證照狀況。請問領隊應如何處理相關事宜？",
+        keyPoint: "尊重邊境移民官職權、協助退關領行李返家、誠懇承接責任交由後方客服釐清責任歸屬。",
+        trap: "在印尼移民官前大鬧抗議；把責任推得一乾二淨激怒旅客；延誤全團登機起飛時間。",
+        action: "配合移民官辦理退關：接受移民官裁定，尊重主權國家護照防偽審查標準，協助該旅客辦理退關領回托運行李。\n安撫情緒與誠懇致歉：不當場爭辯是旅行社還是旅客自身弄壞，展現同理心致歉，說明當前最重要的是人身返家與重新換照。\n引導家屬接送：聯繫該旅客在台家屬前來機場接機，或協助其搭乘計程車返家，並告知後續至外交部領事事務局換照流程。\n通報公司釐清責任：即刻帶領其餘團員通關登機；同時通報公司主管，由內勤調閱收件驗審記錄，釐清OP端審查責任並啟動後續合約退費或賠償程序。"
+      },
+      {
+        id: 32,
+        category: "證件",
+        theme: "證照遭搶",
+        difficulty: "★★★★★",
+        scenario: "東歐18日團第3天，團體抵達飯店，領隊先行下車準備辦理check-in時，突遭飛車搶劫，隨身攜帶之個人護照、手機、預備金、信用卡及Voucher、團體大表等相關資料等全被奪走。請問領隊應如何處理相關事宜？",
+        keyPoint: "領隊身先士卒穩住軍心、借用飯店資源對外通報、向兼轄外館與台灣組團社求援。",
+        trap: "領隊情緒崩潰讓全團陷入恐慌；東歐多國無設館不知向兼轄館處求救；行程停擺群龍無首。",
+        action: "穩住陣腳完成入住：深呼吸保持冷靜，先借用飯店櫃檯電腦與電話，向飯店確認團體名單並順利發放房卡，讓團員進房休息，安撫全團平安。\n當地報警與外館求援：在飯店人員陪同下向警方報案取得報案證明；確認所在國（如斯洛伐克由駐奧地利處兼轄，保加利亞由駐希臘兼轄等），聯繫兼轄之台灣駐外館處申請補發領隊護照。\n公司後勤資金補給：聯繫台灣組團社，請公司立刻重傳所有行程Voucher與旅客保險名冊電子檔至飯店信箱；並透過西聯匯款（Western Union）電匯緊急公款至當地領取。\n手機補發與後續帶團：由Local導遊暫時協助墊付小額支出，購買備用二手手機與SIM卡恢復通訊，維持後續行程順利推進。"
+      },
+      {
+        id: 33,
+        category: "證件",
+        theme: "遺失",
+        difficulty: "★☆☆☆☆",
+        scenario: "加拿大12日團返國，旅客依序自機艙下機，經由空橋準備前往入境證照查驗櫃檯途中，某團員驚覺其裝有護照及身分證之護照夾不慎遺失，恐無法順利辦理入境通關。請問領隊應如何處理相關事宜？",
+        keyPoint: "第一時間回溯機艙空橋協尋、尋求移民署國境事務大隊公務檯查證國民身分合法入境。",
+        trap: "放任旅客獨自滯留空橋；不知本國國民有權返國入境之法定補救管道；延誤全團出關提領行李。",
+        action: "即刻沿途協尋：請旅客留在空橋出口，領隊請地勤人員與機艙清潔組立刻重回機艙座位、行李架與空橋通道沿線地毯搜尋。\n移民署公務檯申報：若確認找不到，帶領旅客前往桃園機場移民署「國境事務大隊入出國查驗公務檯」說明護照遺失。\n身分查核與入境證明：提供旅客之健保卡、駕照、手機內護照翻拍照，或報出國民身分證字號，由移民官調閱戶政與入出境系統核對人像。\n協助辦理臨時入國許可：移民署核對身分無誤後，依法開立「入國證明文件」讓其順利通關入境，並叮囑其隔日盡速至戶政事務所與外交部補辦證件。"
+      },
+      {
+        id: 34,
+        category: "其他",
+        theme: "身體不適",
+        difficulty: "★★★★☆",
+        scenario: "中南美洲19日團第8日，某團員出現突發性高燒，伴隨嚴重頭痛、後眼窩痛、肌肉與關節痛等症狀。請問領隊應如何處理相關事宜？",
+        keyPoint: "高度警覺熱帶蟲媒傳染病（登革熱/茲卡）、緊急送醫抽血、嚴防團體感染並保全醫療證明。",
+        trap: "當作一般感冒隨便給退燒藥吃延誤就醫；隱匿病情導致團體傳播；返國未向疾管署申報檢疫。",
+        action: "警覺傳染病緊急送醫：此為典型登革熱或黃熱病、茲卡病毒症狀，立即派Local導遊陪同該旅客前往當地大型綜合醫院急診室抽血檢驗，領隊留守大團。\n退燒用藥安全提醒：叮囑醫護人員注意，在確診前避免使用阿斯匹靈類（Aspirin/NSAID）退燒藥，以防引發登革出血熱。\n全團防蚊與隔離措施：要求全團旅客加強防蚊噴霧塗抹，穿著長袖長褲；若該員需住院觀察，指派專人陪同，行程視病情彈性調整。\n通報疾管署與保險：通報台灣組團社與保險公司海外急難救助；提醒醫院備妥診斷書正本與費用明細，返國入境時主動向台灣疾管署（CDC）檢疫站申報。"
+      },
+      {
+        id: 35,
+        category: "其他",
+        theme: "意外",
+        difficulty: "★★★★★",
+        scenario: "土耳其10日團第4日清晨，經導遊安排，部分團員參加知名景點之熱氣球體驗活動，不幸於降落過程中發生意外，導致本團3名旅客受傷，現場情況混亂，旅客情緒不安。請問領隊應如何處理相關事宜？",
+        keyPoint: "啟動海外大量傷患救援機制、分工送醫與大團心理安撫、保全熱氣球公司責任保險證據。",
+        trap: "領隊驚慌失措未報警；未索取熱氣球業者事故報告；忽略未受傷團員的心理創傷任其恐慌。",
+        action: "現場檢傷與呼叫急救：立刻撥打土耳其急救電話112呼叫救護車，對3名傷者進行初步止血固定，指派在地土耳其導遊陪同救護車前往醫院。\n大團安撫與撤離現場：領隊留守現場，將其餘未受傷但受驚嚇之團員帶離混亂事故區返回飯店，提供熱飲並進行心理安撫。\n責任證據保全：要求熱氣球營運商提供事故報告，記錄氣球編號、駕駛姓名與業者投保之責任保險資料，並拍照記錄著陸現場狀況。\n通報代表處與啟動保險：通報「駐安卡拉台北經濟文化代表處」及台灣組團社，啟動海外急難救助機制；隨後前往醫院探視傷者，確保醫療救治無虞。"
+      },
+      {
+        id: 36,
+        category: "其他",
+        theme: "恐怖攻擊",
+        difficulty: "★★★★★",
+        scenario: "法國10日團返程當日，獲悉因恐怖分子計畫發動攻擊，該國政府為確保飛航安全，宣布巴黎機場即刻進入緊急封鎖狀態。請問領隊應如何處理相關事宜？",
+        keyPoint: "絕對服從軍警反恐封鎖指令、確保全員就地避難安全、啟動滯留食宿與跨國撤退計畫。",
+        trap: "擅自帶團前往機場圍觀或強行闖關；未向外館與在台家屬報平安引發恐慌；放任團員在市區自由活動。",
+        action: "就地避難與點名：嚴禁前往機場！若車輛在路上，立刻轉往郊區安全飯店入住；若在市區飯店，嚴禁團員離開飯店大門，清點全員人數。\n通報外館與家屬報平安：第一時間致電「駐法國台北代表處」通報全團滯留位置與聯絡電話；通報組團社並由台北公司向全體家屬發布平安訊息。\n儲備物資與延長住宿：與飯店協商延長住宿合約，動用預備金採買至少2-3天的乾糧飲用水，定時在大廳召開情況說明會穩定軍心。\n重啟航班候補：密切監控法國政府官方反恐戒備等級（Vigipirate），待機場解除封鎖後，協同台灣公司票務全力爭取候補最早返台機位。"
+      },
+      {
+        id: 37,
+        category: "其他",
+        theme: "搶劫",
+        difficulty: "★★★★★",
+        scenario: "南非8日團第6天，用餐時突遭3名持槍歹徒闖入，財物遭洗劫，其中2名旅客因驚慌掙扎不幸受傷，現場秩序混亂、團員極度驚恐，原訂翌日返國之行程亦因此受到嚴重影響。請問領隊應如何處理相關事宜？",
+        keyPoint: "不抵抗保命原則、傷者緊急送醫、全團護照遭劫連夜協調駐南非代表處專案補發入國證明書。",
+        trap: "鼓勵或縱容團員與持槍歹徒搏鬥；未取得警局正式報案單導致無法出境與理賠；輕忽團員心理創傷。",
+        action: "保命防禦降溫：案發時以手勢低聲要求全員「不眼神接觸、不抗拒、錢包雙手奉上」，歹徒離去後立即反鎖現場。\n急救送醫與報警：撥打南非報警與急救電話10111/10177，將2名受傷團員送醫救治；領隊在警局督促警方開立正式刑事報案證明（Case Number / Police Report）。\n外館連夜緊急補照：若翌日返國且護照遭搶，立刻撥打「駐南非台北聯絡代表處」24小時急難救助專線，協調外館人員連夜專案趕製「入國證明書」。\n更改機票延後返國：聯繫航空公司與地接社，因刑案就醫與補照延後1至2日航班返台，安撫全團驚恐情緒，全程陪同照料。"
+      },
+      {
+        id: 38,
+        category: "其他",
+        theme: "孩童走失",
+        difficulty: "★★★☆☆",
+        scenario: "東京5日團第3天，安排迪士尼樂園行程，園區人潮眾多，團員中某6歲女童於遊園期間不慎與父母走散，家長遍尋未果、情緒焦慮失控。請問領隊應如何處理相關事宜？",
+        keyPoint: "啟動迪士尼迷童尋人系統、安撫家長留在原點等待、分流大團集合行程不受阻延。",
+        trap: "領隊與家長像無頭蒼蠅在巨大園區亂跑；延誤全團出園時間引發團體抱怨；未留守專人對接園方。",
+        action: "啟動園區迷路兒童中心：立刻帶領父母前往迪士尼「迷童服務中心（Lost Children Center）」，通報女童姓名、年齡、特徵、當日衣著顏色與手機內全身生活照。\n安撫家長留守中心：強烈勸導父母留守於迷童中心，說明迪士尼內部尋人廣播與工作人員網絡極為綿密，四處亂跑反而會與園方尋獲者錯過。\n大團分流準時集合：指派當地導遊或副領隊依原定時間前往大門口集合全團其他旅客，如期帶領大團前往餐廳或飯店，維持大團秩序。\n尋獲核對與備案：尋獲後核對身分領回女童；若至閉園仍未尋獲，領隊立即陪同家長前往千葉縣浦安警察署正式報警立案。"
+      },
+      {
+        id: 39,
+        category: "其他",
+        theme: "暴動",
+        difficulty: "★★★★★",
+        scenario: "泰國5日團第4天，曼谷突發嚴重暴動，抗議群眾佔領並癱瘓國際機場，空中交通全面中斷，同時，市中心陷入混亂與治安威脅。請問領隊應如何處理相關事宜？",
+        keyPoint: "迅速撤離抗議核心區至安全城鎮、通報駐泰代表處登記、研擬陸路避開曼谷之轉機撤離備案。",
+        trap: "帶旅客靠近抗議示威現場拍照圍觀；堅持硬闖被佔領之蘇凡納布機場；未備齊滯留資金與物資。",
+        action: "遠離暴動熱區：立即下令司機掉頭，避開市中心集會遊行道路與機場周邊，將全團撤離至芭達雅或華欣等外圍安全渡假區飯店安置。\n通報外館與政府求援：致電「駐泰國台北經濟文化辦事處」通報全團座標與人數，登記國人急難救助名單，確認政府是否啟動撤僑包機。\n擬定替代撤退路線：與Local及台灣公司評估陸路交通可行性，若曼谷機場長期癱瘓，包車轉往烏達拋機場（UTP）、普吉或清邁機場搭機返國。\n物資備齊與穩定情緒：每日發布最新安全簡報，備齊充足常備藥與現金，安撫團員滯留焦慮，確保零意外全員返國。"
+      },
+      {
+        id: 40,
+        category: "其他",
+        theme: "遭竊",
+        difficulty: "★★★★★",
+        scenario: "義大利12日團第4天，於羅馬市區用餐期間，停放於停車場之遊覽車車窗遭擊破，團員留置車上之隨身行李、紀念品及部分護照遭竊；某團員因財物損失情緒激動，突發心臟不適。請問領隊應如何處理相關事宜？",
+        keyPoint: "醫療急救第一優先（112）、封鎖車輛保全證據（Denuncia）、駐義代表處緊急補發護照。",
+        trap: "讓團員上車翻找物品破壞現場與被玻璃割傷；領隊拋下被竊大團自己跟救護車跑去醫院；未取得報案證明正本。",
+        action: "醫療急救第一優先：立刻撥打歐洲緊急電話112叫救護車，讓心臟不適者半坐臥休息並尋找舌下錠；指派導遊與家屬隨救護車就醫，領隊留守現場掌控全團。\n嚴格封鎖現場拍照：嚴禁團員上車翻找以防玻璃割傷並防止破壞刑案現場；領隊與司機於車外拍照錄影記錄破窗與被翻動痕跡。\n警方鑑識與報案證明：待警方抵達勘驗完畢後，始引導團員上車清點財物；至警局取得「報案證明正本（Denuncia）」作為理賠與補照依據。\n外館急難補照：聯繫「駐義大利台北代表處」，以報案證明與身分證影本連夜趕辦「入國證明書」，同步通報台灣組團社與保險公司。"
+      }
+    ];
+
+    // 全域變數
+    let currentIdx = 0; // 0~39
+    let isAnswerVisible = true;
+    let filteredQuestions = [...questionsData];
+
+    // 計時器變數
+    let timerInterval = null;
+    let timerMode = 'PREP'; // 'PREP' (8分) 或 'SPEAK' (4分)
+    let timeLeft = 8 * 60; // 秒數
+    let isTimerRunning = false;
+
+    // DOM 節點
+    const cardQuestionNo = document.getElementById('cardQuestionNo');
+    const cardCategory = document.getElementById('cardCategory');
+    const cardTheme = document.getElementById('cardTheme');
+    const cardDifficulty = document.getElementById('cardDifficulty');
+    const cardScenario = document.getElementById('cardScenario');
+    const cardKeyPoint = document.getElementById('cardKeyPoint');
+    const cardTrap = document.getElementById('cardTrap');
+    const cardActionContainer = document.getElementById('cardActionContainer');
+    const currentQuestionIndicator = document.getElementById('currentQuestionIndicator');
+    const jumpQuestionSelect = document.getElementById('jumpQuestionSelect');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const difficultyFilter = document.getElementById('difficultyFilter');
+    const answerSection = document.getElementById('answerSection');
+    const toggleAnswerBtn = document.getElementById('toggleAnswerBtn');
+    const goldenRulesBox = document.getElementById('goldenRulesBox');
+    const toggleGoldenRulesBtn = document.getElementById('toggleGoldenRulesBtn');
+
+    // 計時器 DOM
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerModeLabel = document.getElementById('timerModeLabel');
+    const timerModeIcon = document.getElementById('timerModeIcon');
+    const timerPacingTip = document.getElementById('timerPacingTip');
+    const startTimerBtn = document.getElementById('startTimerBtn');
+    const pauseTimerBtn = document.getElementById('pauseTimerBtn');
+    const resetTimerBtn = document.getElementById('resetTimerBtn');
+    const switchModeBtn = document.getElementById('switchModeBtn');
+
+    // 渲染題目函數
+    function renderQuestion(q) {
+      cardQuestionNo.textContent = `第 ${q.id} 題`;
+      cardCategory.textContent = q.category;
+      cardTheme.textContent = q.theme;
+      cardDifficulty.textContent = q.difficulty;
+      cardScenario.textContent = q.scenario;
+      cardKeyPoint.textContent = q.keyPoint;
+      cardTrap.textContent = q.trap;
+
+      // 拆解實際操作字串，轉換為帶有強烈條理標題的段落
+      cardActionContainer.innerHTML = '';
+      const steps = q.action.split('\n');
+      steps.forEach(step => {
+        if (!step.trim()) return;
+        const parts = step.split('：');
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'bg-white dark:bg-slate-850 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-750 flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2 shadow-xs';
+        
+        if (parts.length >= 2) {
+          const titleSpan = document.createElement('span');
+          titleSpan.className = 'font-bold text-brand-600 dark:text-brand-400 shrink-0 inline-flex items-center gap-1';
+          titleSpan.innerHTML = `<span>▶</span> ${parts[0]}：`;
+          const descSpan = document.createElement('span');
+          descSpan.className = 'text-slate-700 dark:text-slate-200';
+          descSpan.textContent = parts.slice(1).join('：');
+          itemDiv.appendChild(titleSpan);
+          itemDiv.appendChild(descSpan);
+        } else {
+          itemDiv.textContent = step;
+        }
+        cardActionContainer.appendChild(itemDiv);
+      });
+
+      // 更新進度與選單
+      currentQuestionIndicator.textContent = `${q.id} / 40 (目前第 ${currentIdx + 1} 筆)`;
+      jumpQuestionSelect.value = q.id;
+    }
+
+    // 篩選題庫
+    function applyFilters() {
+      const selectedCat = categoryFilter.value;
+      const selectedDiff = difficultyFilter.value;
+
+      filteredQuestions = questionsData.filter(q => {
+        const matchCat = (selectedCat === 'ALL' || q.category === selectedCat);
+        const matchDiff = (selectedDiff === 'ALL' || q.difficulty === selectedDiff);
+        return matchCat && matchDiff;
+      });
+
+      if (filteredQuestions.length === 0) {
+        alert('抱歉，目前選定的類別與難度沒有符合的題目，已為您自動還原條件！');
+        categoryFilter.value = 'ALL';
+        difficultyFilter.value = 'ALL';
+        filteredQuestions = [...questionsData];
+      }
+
+      currentIdx = 0;
+      renderQuestion(filteredQuestions[currentIdx]);
+    }
+
+    // 隨機抽題邏輯
+    function drawRandomQuestion() {
+      if (filteredQuestions.length <= 1) {
+        renderQuestion(filteredQuestions[0]);
+        return;
+      }
+      let newIdx;
+      do {
+        newIdx = Math.floor(Math.random() * filteredQuestions.length);
+      } while (newIdx === currentIdx);
+
+      currentIdx = newIdx;
+      renderQuestion(filteredQuestions[currentIdx]);
+
+      // 抽新題時，重設計時器為「8分鐘準備模式」
+      setTimerMode('PREP');
+    }
+
+    // 計時器核心邏輯
+    function updateTimerUI() {
+      const min = Math.floor(timeLeft / 60);
+      const sec = timeLeft % 60;
+      timerDisplay.textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+
+      // 緊急提醒色彩
+      if (timeLeft <= 30 && timeLeft > 0) {
+        timerDisplay.classList.add('text-rose-500', 'pulse-urgent');
+        timerDisplay.classList.remove('text-white');
+      } else {
+        timerDisplay.classList.remove('text-rose-500', 'pulse-urgent');
+        timerDisplay.classList.add('text-white');
+      }
+    }
+
+    function setTimerMode(mode) {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      timerMode = mode;
+      startTimerBtn.classList.remove('hidden');
+      pauseTimerBtn.classList.add('hidden');
+
+      if (mode === 'PREP') {
+        timeLeft = 8 * 60; // 8分鐘
+        timerModeLabel.textContent = '準備思考階段 (8分鐘)';
+        timerModeLabel.className = 'text-xs sm:text-sm font-semibold tracking-wider text-amber-400 uppercase';
+        timerModeIcon.textContent = '⏱️';
+        timerPacingTip.textContent = '建議擬定：第0步安頓、第1步查底牌、第2步給選項';
+      } else {
+        timeLeft = 4 * 60; // 4分鐘
+        timerModeLabel.textContent = '口頭發表回答 (4分鐘)';
+        timerModeLabel.className = 'text-xs sm:text-sm font-semibold tracking-wider text-emerald-400 uppercase';
+        timerModeIcon.textContent = '🎙️';
+        timerPacingTip.textContent = '配速：1分定性原則 ➔ 2分現場處置 ➔ 1分通報善後';
+      }
+      updateTimerUI();
+    }
+
+    function startTimer() {
+      if (isTimerRunning) return;
+      isTimerRunning = true;
+      startTimerBtn.classList.add('hidden');
+      pauseTimerBtn.classList.remove('hidden');
+
+      timerInterval = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          updateTimerUI();
+        } else {
+          clearInterval(timerInterval);
+          isTimerRunning = false;
+          startTimerBtn.classList.remove('hidden');
+          pauseTimerBtn.classList.add('hidden');
+          
+          if (timerMode === 'PREP') {
+            alert('🔔 8分鐘準備時間結束！請準備開始口頭發表（自動切換為4分鐘回答模式）');
+            setTimerMode('SPEAK');
+            startTimer();
+          } else {
+            alert('⏰ 4分鐘發表時間結束！請停筆並向委員致意結束。');
+          }
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      startTimerBtn.classList.remove('hidden');
+      pauseTimerBtn.classList.add('hidden');
+    }
+
+    function resetTimer() {
+      setTimerMode(timerMode);
+    }
+
+    function toggleTimerMode() {
+      setTimerMode(timerMode === 'PREP' ? 'SPEAK' : 'PREP');
+    }
+
+    // 事件監聽綁定
+    document.getElementById('randomBtn').addEventListener('click', drawRandomQuestion);
+    
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      currentIdx = (currentIdx - 1 + filteredQuestions.length) % filteredQuestions.length;
+      renderQuestion(filteredQuestions[currentIdx]);
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      currentIdx = (currentIdx + 1) % filteredQuestions.length;
+      renderQuestion(filteredQuestions[currentIdx]);
+    });
+
+    categoryFilter.addEventListener('change', applyFilters);
+    difficultyFilter.addEventListener('change', applyFilters);
+
+    // 快速跳題選單初始化
+    questionsData.forEach(q => {
+      const opt = document.createElement('option');
+      opt.value = q.id;
+      opt.textContent = `第${q.id}題 - ${q.theme}`;
+      jumpQuestionSelect.appendChild(opt);
+    });
+
+    jumpQuestionSelect.addEventListener('change', (e) => {
+      const targetId = parseInt(e.target.value, 10);
+      const targetIdx = filteredQuestions.findIndex(q => q.id === targetId);
+      if (targetIdx !== -1) {
+        currentIdx = targetIdx;
+        renderQuestion(filteredQuestions[currentIdx]);
+      } else {
+        // 若在被過濾的名單外，先重設過濾器
+        categoryFilter.value = 'ALL';
+        difficultyFilter.value = 'ALL';
+        filteredQuestions = [...questionsData];
+        currentIdx = questionsData.findIndex(q => q.id === targetId);
+        renderQuestion(filteredQuestions[currentIdx]);
+      }
+    });
+
+    // 擬答展開/隱藏切換
+    toggleAnswerBtn.addEventListener('click', () => {
+      isAnswerVisible = !isAnswerVisible;
+      if (isAnswerVisible) {
+        answerSection.classList.remove('hidden');
+        toggleAnswerBtn.textContent = '隱藏擬答 (模擬實測)';
+      } else {
+        answerSection.classList.add('hidden');
+        toggleAnswerBtn.textContent = '查看參考擬答 👁️';
+      }
+    });
+
+    // 金字塔原則速查開關
+    toggleGoldenRulesBtn.addEventListener('click', () => {
+      goldenRulesBox.classList.toggle('hidden');
+    });
+
+    // 計時器按鈕
+    startTimerBtn.addEventListener('click', startTimer);
+    pauseTimerBtn.addEventListener('click', pauseTimer);
+    resetTimerBtn.addEventListener('click', resetTimer);
+    switchModeBtn.addEventListener('click', toggleTimerMode);
+
+    // 深色模式切換
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    themeToggle.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      themeIcon.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+    });
+
+    // 題庫總覽 Modal 邏輯
+    const listModal = document.getElementById('listModal');
+    const showListModalBtn = document.getElementById('showListModalBtn');
+    const closeListModalBtn = document.getElementById('closeListModalBtn');
+    const modalListContent = document.getElementById('modalListContent');
+    const searchQuestionInput = document.getElementById('searchQuestionInput');
+
+    function renderModalList(list) {
+      modalListContent.innerHTML = '';
+      if (list.length === 0) {
+        modalListContent.innerHTML = '<div class="text-center py-6 text-slate-400 text-sm">無符合關鍵字的題目</div>';
+        return;
+      }
+      list.forEach(q => {
+        const item = document.createElement('div');
+        item.className = 'py-2.5 px-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer flex items-center justify-between gap-3 transition';
+        item.innerHTML = `
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-xs font-bold px-2 py-0.5 rounded bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-300 shrink-0">#${q.id}</span>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 shrink-0">${q.category}</span>
+            <span class="text-xs sm:text-sm font-medium truncate text-slate-800 dark:text-slate-200">${q.theme}：${q.scenario}</span>
+          </div>
+          <span class="text-xs text-amber-500 font-mono shrink-0">${q.difficulty}</span>
+        `;
+        item.addEventListener('click', () => {
+          categoryFilter.value = 'ALL';
+          difficultyFilter.value = 'ALL';
+          filteredQuestions = [...questionsData];
+          currentIdx = questionsData.findIndex(item => item.id === q.id);
+          renderQuestion(filteredQuestions[currentIdx]);
+          listModal.classList.add('hidden');
+          setTimerMode('PREP');
+        });
+        modalListContent.appendChild(item);
+      });
+    }
+
+    showListModalBtn.addEventListener('click', () => {
+      renderModalList(questionsData);
+      searchQuestionInput.value = '';
+      listModal.classList.remove('hidden');
+    });
+
+    closeListModalBtn.addEventListener('click', () => {
+      listModal.classList.add('hidden');
+    });
+
+    listModal.addEventListener('click', (e) => {
+      if (e.target === listModal) listModal.classList.add('hidden');
+    });
+
+    searchQuestionInput.addEventListener('input', (e) => {
+      const keyword = e.target.value.trim().toLowerCase();
+      const filtered = questionsData.filter(q => 
+        q.id.toString().includes(keyword) ||
+        q.category.toLowerCase().includes(keyword) ||
+        q.theme.toLowerCase().includes(keyword) ||
+        q.scenario.toLowerCase().includes(keyword) ||
+        q.keyPoint.toLowerCase().includes(keyword)
+      );
+      renderModalList(filtered);
+    });
+
+    // 鍵盤快捷鍵（左右切換、空格隨機抽題）
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      if (e.key === 'ArrowRight') document.getElementById('nextBtn').click();
+      if (e.key === 'ArrowLeft') document.getElementById('prevBtn').click();
+      if (e.key === ' ') {
+        e.preventDefault();
+        drawRandomQuestion();
+      }
+    });
+
+    // 初始化載入第一題
+    renderQuestion(questionsData[0]);
+    updateTimerUI();
+  </script>
+</body>
+</html>
